@@ -1,0 +1,160 @@
+{
+  "algorithm": "ASCON_AEAD128_SP800_232",
+  "key_size_bytes": 16,
+  "nonce_size_bytes": 16,
+  "tag_size_bytes": 16,
+  "rate_bytes": 16,
+  "source": "ascon-c commit 446347f21b209f3921c65ece70027c366cbe1693, crypto_aead/asconaead128/LWC_AEAD_KAT_128_128.txt",
+  "vectors": [
+    {
+      "id": 1,
+      "description": "Official Ascon-AEAD128 Count 1: 0-byte PT, 0-byte AD",
+      "key": "000102030405060708090a0b0c0d0e0f",
+      "nonce": "101112131415161718191a1b1c1d1e1f",
+      "ad": "",
+      "plaintext": "",
+      "ciphertext": "",
+      "tag": "4f9c278211bec9316bf68f46ee8b2ec6"
+    },
+    {
+      "id": 2,
+      "description": "Official Ascon-AEAD128 Count 2: 0-byte PT, 1-byte AD",
+      "key": "000102030405060708090a0b0c0d0e0f",
+      "nonce": "101112131415161718191a1b1c1d1e1f",
+      "ad": "30",
+      "plaintext": "",
+      "ciphertext": "",
+      "tag": "cccb674fe18a09a285d6ab11b35675c0"
+    },
+    {
+      "id": 3,
+      "description": "Official Ascon-AEAD128 Count 9: 0-byte PT, 8-byte AD",
+      "key": "000102030405060708090a0b0c0d0e0f",
+      "nonce": "101112131415161718191a1b1c1d1e1f",
+      "ad": "3031323334353637",
+      "plaintext": "",
+      "ciphertext": "",
+      "tag": "865c594093a9edee2c1d6384ccb4939e"
+    },
+    {
+      "id": 4,
+      "description": "Official Ascon-AEAD128 Count 17: 0-byte PT, 16-byte AD",
+      "key": "000102030405060708090a0b0c0d0e0f",
+      "nonce": "101112131415161718191a1b1c1d1e1f",
+      "ad": "303132333435363738393a3b3c3d3e3f",
+      "plaintext": "",
+      "ciphertext": "",
+      "tag": "e4230cdb8330ee9dc0cfd7c7b346e6dc"
+    },
+    {
+      "id": 5,
+      "description": "Official Ascon-AEAD128 Count 34: 1-byte PT, 0-byte AD",
+      "key": "000102030405060708090a0b0c0d0e0f",
+      "nonce": "101112131415161718191a1b1c1d1e1f",
+      "ad": "",
+      "plaintext": "20",
+      "ciphertext": "e8",
+      "tag": "dd576aba1cd3e6fc704de02aedb79588"
+    },
+    {
+      "id": 6,
+      "description": "Official Ascon-AEAD128 Count 35: 1-byte PT, 1-byte AD",
+      "key": "000102030405060708090a0b0c0d0e0f",
+      "nonce": "101112131415161718191a1b1c1d1e1f",
+      "ad": "30",
+      "plaintext": "20",
+      "ciphertext": "96",
+      "tag": "2b8016836c75a7d86866588ca245d886"
+    },
+    {
+      "id": 7,
+      "description": "Official Ascon-AEAD128 Count 42: 1-byte PT, 8-byte AD",
+      "key": "000102030405060708090a0b0c0d0e0f",
+      "nonce": "101112131415161718191a1b1c1d1e1f",
+      "ad": "3031323334353637",
+      "plaintext": "20",
+      "ciphertext": "fa",
+      "tag": "7dce50dfd3d3eaccd615cbc25967202c"
+    },
+    {
+      "id": 8,
+      "description": "Official Ascon-AEAD128 Count 67: 2-byte PT, 0-byte AD",
+      "key": "000102030405060708090a0b0c0d0e0f",
+      "nonce": "101112131415161718191a1b1c1d1e1f",
+      "ad": "",
+      "plaintext": "2021",
+      "ciphertext": "e8c3",
+      "tag": "5a12d2a396e76224f6ee5418f6465197"
+    },
+    {
+      "id": 9,
+      "description": "Official Ascon-AEAD128 Count 75: 2-byte PT, 8-byte AD",
+      "key": "000102030405060708090a0b0c0d0e0f",
+      "nonce": "101112131415161718191a1b1c1d1e1f",
+      "ad": "3031323334353637",
+      "plaintext": "2021",
+      "ciphertext": "fabe",
+      "tag": "fa678b8fd28e1b265de2770bba5e90eb"
+    },
+    {
+      "id": 10,
+      "description": "Official Ascon-AEAD128 Count 133: 4-byte PT, 0-byte AD",
+      "key": "000102030405060708090a0b0c0d0e0f",
+      "nonce": "101112131415161718191a1b1c1d1e1f",
+      "ad": "",
+      "plaintext": "20212223",
+      "ciphertext": "e8c3deee",
+      "tag": "03c0a96a9b09b64cde66d9ab0796cd04"
+    },
+    {
+      "id": 11,
+      "description": "Official Ascon-AEAD128 Count 141: 4-byte PT, 8-byte AD",
+      "key": "000102030405060708090a0b0c0d0e0f",
+      "nonce": "101112131415161718191a1b1c1d1e1f",
+      "ad": "3031323334353637",
+      "plaintext": "20212223",
+      "ciphertext": "fabe2cb1",
+      "tag": "55e2032d9c598fee8119c43a882b42b0"
+    },
+    {
+      "id": 12,
+      "description": "Official Ascon-AEAD128 Count 265: 8-byte PT, 0-byte AD",
+      "key": "000102030405060708090a0b0c0d0e0f",
+      "nonce": "101112131415161718191a1b1c1d1e1f",
+      "ad": "",
+      "plaintext": "2021222324252627",
+      "ciphertext": "e8c3deee246cc5ea",
+      "tag": "e455ef6b33b782a3dd91ed6695373c27"
+    },
+    {
+      "id": 13,
+      "description": "Official Ascon-AEAD128 Count 273: 8-byte PT, 8-byte AD",
+      "key": "000102030405060708090a0b0c0d0e0f",
+      "nonce": "101112131415161718191a1b1c1d1e1f",
+      "ad": "3031323334353637",
+      "plaintext": "2021222324252627",
+      "ciphertext": "fabe2cb1e7eba632",
+      "tag": "40524bc3388725341b84c3537042dec5"
+    },
+    {
+      "id": 14,
+      "description": "Official Ascon-AEAD128 Count 529: 16-byte PT, 0-byte AD",
+      "key": "000102030405060708090a0b0c0d0e0f",
+      "nonce": "101112131415161718191a1b1c1d1e1f",
+      "ad": "",
+      "plaintext": "202122232425262728292a2b2c2d2e2f",
+      "ciphertext": "e8c3deee246cc5eae3e872313897a2bb",
+      "tag": "9eaa915c9dd3245d77048f24d46d27a7"
+    },
+    {
+      "id": 15,
+      "description": "Official Ascon-AEAD128 Count 537: 16-byte PT, 8-byte AD",
+      "key": "000102030405060708090a0b0c0d0e0f",
+      "nonce": "101112131415161718191a1b1c1d1e1f",
+      "ad": "3031323334353637",
+      "plaintext": "202122232425262728292a2b2c2d2e2f",
+      "ciphertext": "fabe2cb1e7eba6329a30080f26e7dc72",
+      "tag": "053d4b066b939796125beb583009fe0d"
+    }
+  ]
+}

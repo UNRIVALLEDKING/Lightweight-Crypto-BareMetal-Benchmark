@@ -1,0 +1,36 @@
+{
+  "algorithm": "PRESENT80",
+  "block_size_bytes": 8,
+  "key_size_bytes": 10,
+  "rounds": 31,
+  "vectors": [
+    {
+      "id": 1,
+      "description": "CHES 2007 All Zeros Key and Plaintext",
+      "key": "00000000000000000000",
+      "plaintext": "0000000000000000",
+      "ciphertext": "5579c1387b228445"
+    },
+    {
+      "id": 2,
+      "description": "CHES 2007 All Ones Key and All Zeros Plaintext",
+      "key": "ffffffffffffffffffff",
+      "plaintext": "0000000000000000",
+      "ciphertext": "e72c46c0f5945049"
+    },
+    {
+      "id": 3,
+      "description": "CHES 2007 All Zeros Key and All Ones Plaintext",
+      "key": "00000000000000000000",
+      "plaintext": "ffffffffffffffff",
+      "ciphertext": "a112ffc72f68417b"
+    },
+    {
+      "id": 4,
+      "description": "CHES 2007 All Ones Key and All Ones Plaintext",
+      "key": "ffffffffffffffffffff",
+      "plaintext": "ffffffffffffffff",
+      "ciphertext": "3333dcd3213210d2"
+    }
+  ]
+}

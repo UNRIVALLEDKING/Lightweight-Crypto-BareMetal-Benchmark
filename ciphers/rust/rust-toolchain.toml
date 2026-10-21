@@ -1,0 +1,4 @@
+# Exact rustc version is recorded per build in build/<cell>/manifest.json.
+[toolchain]
+channel = "stable"
+targets = ["thumbv8m.main-none-eabi", "riscv32imac-unknown-none-elf"]

@@ -1,0 +1,52 @@
+[package]
+name = "lwc_rust"
+version = "0.2.0"
+edition = "2021"
+description = "no_std lightweight-cipher implementations (SIMON 64/128, PRESENT-80, Ascon-AEAD128) behind a C ABI"
+license = "MIT"
+publish = false
+
+[lib]
+name = "lwc_rust"
+# scripts/build_all.py selects the crate type explicitly (`cargo rustc --crate-type ...`):
+# staticlib for the embedded targets, cdylib for the host tests.
+crate-type = ["staticlib", "cdylib"]
+
+[dependencies]
+# None. core only.
+
+# ---------------------------------------------------------------------------
+# Benchmark profiles. Each opt level is matched to the C/C++/Zig flags in
+# scripts/build_all.py:   speed = -O3 / ReleaseFast,   size = -Oz / ReleaseSmall.
+# The *-ovf variants differ ONLY in overflow-checks (the Rust safety profile).
+# Slice bounds checks cannot be switched off and are present in every profile.
+# LTO is off so that, as for C/C++/Zig, the backend is one object compiled once.
+# ---------------------------------------------------------------------------
+[profile.release]
+opt-level = 3
+lto = false
+codegen-units = 1
+panic = "abort"
+overflow-checks = false
+debug-assertions = false
+incremental = false
+debug = false
+
+[profile.speed]
+inherits = "release"
+
+[profile.speed-ovf]
+inherits = "release"
+overflow-checks = true
+
+[profile.size]
+inherits = "release"
+opt-level = "z"
+
+[profile.size-ovf]
+inherits = "release"
+opt-level = "z"
+overflow-checks = true
+
+[profile.dev]
+panic = "abort"

@@ -1,0 +1,85 @@
+# ==============================================================================
+# Git ignore configuration for the LWC language benchmarks
+# ==============================================================================
+
+# --- Python Build & Cache Artifacts ---
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+.venv/
+.pytest_cache/
+*.egg-info/
+dist/
+
+# --- Build outputs ---
+/build/
+harness/build_*/
+harness/build/
+host/build/
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+*.elf
+*.bin
+*.map
+*.hex
+*.dis
+*.uf2
+
+# --- Rust (Cargo) Build Artifacts ---
+ciphers/rust/target/
+ciphers/rust_opt/target/
+**/target/
+**/*.rs.bk
+
+# --- Zig Build Artifacts ---
+ciphers/zig/zig-out/
+ciphers/zig/.zig-cache/
+**/.zig-cache/
+**/zig-out/
+
+# --- Compiled Libraries & Object Files ---
+*.o
+*.obj
+*.a
+*.lib
+*.so
+*.dylib
+*.dll
+*.exp
+*.pdb
+
+# --- IDE & Editor Specific Files ---
+.vscode/
+.vs/
+.idea/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.swp
+*~
+*.sublime-project
+*.sublime-workspace
+
+# --- Operating System Artifacts ---
+.DS_Store
+Thumbs.db
+Desktop.ini
+ehthumbs.db
+$RECYCLE.BIN/
+
+# --- Benchmark Run Outputs ---
+/results/runs/
+/results/raw/
+
+# --- Private Paper Drafts & Local Notes ---
+*.docx
+*.doc
+*-pastedcontent-*.txt

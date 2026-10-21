@@ -1,0 +1,10 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+title: "lwc-lang-bench: Impact of Programming Language on Lightweight Cryptography (C, C++, Rust, Zig on Arm Cortex-M33 and RISC-V RV32)"
+type: software
+authors:
+  - family-names: "Kumar"
+    given-names: "Aditya"
+    affiliation: "Department of Information Technology, University of Mumbai"
+# TODO: confirm the author list and add the repository URL before publishing.
+license: MIT

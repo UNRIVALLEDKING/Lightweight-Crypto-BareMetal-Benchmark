@@ -1,0 +1,15 @@
+{
+  "algorithm": "SIMON64_128",
+  "block_size_bytes": 8,
+  "key_size_bytes": 16,
+  "rounds": 44,
+  "vectors": [
+    {
+      "id": 1,
+      "description": "NSA SIMON 64/128 Reference Test Vector (ASCII 'und like')",
+      "key": "0001020308090a0b1011121318191a1b",
+      "plaintext": "756e64206c696b65",
+      "ciphertext": "7aa0dfb920fcc844"
+    }
+  ]
+}
