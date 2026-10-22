@@ -17,7 +17,7 @@ To isolate language and compiler semantics from algorithmic variances, the follo
 - **Single-Backend Hermetic Firmware Images:** Exactly one cipher backend is compiled and linked into each firmware binary alongside a constant harness compiled with Clang `-O2`.
 - **Dual Execution Environments:**
   - **Physical Microcontroller Silicon (`env=hardware`):** Real-world cycle counts via `DWT_CYCCNT` on **Raspberry Pi Pico 2 (RP2350, ARM Cortex-M33 @ 12 MHz)** loaded into SRAM over SWD via OpenOCD.
-  - **Deterministic Virtual Emulation (`env=qemu`):** Instruction counts under QEMU `-icount` across ARM Cortex-M33 (`armv8m`) and 32-bit RISC-V (`rv32imac` baseline and `rv32imac_zbb` with bit-manipulation extensions). This isolates architectural differences (such as hardware barrel shifters on ARM vs rotate instructions in RISC-V Zbb) from physical silicon variations.
+  - **Deterministic Virtual Emulation (`env=qemu`):** Instruction counts under QEMU `-icount` across ARM Cortex-M33 (`armv8m`) and 32-bit RISC-V (`rv32imac` baseline and `rv32imac_zbb` with bit-manipulation extensions). This isolates architectural differences (such as operand-folded rotates on Arm versus native rotate (Zbb) on RISC-V) from physical silicon variations.
 
 ---
 
