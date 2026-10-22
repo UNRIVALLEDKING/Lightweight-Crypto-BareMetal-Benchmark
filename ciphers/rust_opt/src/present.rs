@@ -21,7 +21,7 @@ const SBOX_INV: [u8; 16] = [
     0xB, 0x4, 0x6, 0x3, 0x0, 0x7, 0x9, 0xA,
 ];
 
-#[inline(always)]
+#[inline]
 fn sbox_layer(state: u64) -> u64 {
     let mut out = 0u64;
     for i in 0..16 {
@@ -32,7 +32,7 @@ fn sbox_layer(state: u64) -> u64 {
     out
 }
 
-#[inline(always)]
+#[inline]
 fn sbox_layer_inv(state: u64) -> u64 {
     let mut out = 0u64;
     for i in 0..16 {
@@ -43,7 +43,7 @@ fn sbox_layer_inv(state: u64) -> u64 {
     out
 }
 
-#[inline(always)]
+#[inline]
 fn p_layer(state: u64) -> u64 {
     let mut out = 0u64;
     for i in 0..64 {
@@ -54,7 +54,7 @@ fn p_layer(state: u64) -> u64 {
     out
 }
 
-#[inline(always)]
+#[inline]
 fn p_layer_inv(state: u64) -> u64 {
     let mut out = 0u64;
     for i in 0..64 {

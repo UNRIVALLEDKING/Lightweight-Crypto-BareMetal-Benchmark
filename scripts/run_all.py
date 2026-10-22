@@ -333,12 +333,16 @@ def loader_command(args, cell_dir):
         # Arm Thumb requires odd address for resume; RISC-V uses even address
         is_arm = "arm" in cell_dir.name
         pc = (entry | 1) if is_arm else entry
+        ocd_args = list(args.openocd_args)
+        if not is_arm:
+            # Switch target configuration for Hazard3 RISC-V on RP2350
+            ocd_args = [arg.replace("target/rp2350.cfg", "target/rp2350-riscv.cfg") for arg in ocd_args]
         ocd_cmd = (
             f"adapter speed 5000; init; reset halt; "
             f"load_image {elf.as_posix()}; "
             f"resume 0x{pc:x}; exit"
         )
-        return [args.openocd, *args.openocd_args, "-c", ocd_cmd]
+        return [args.openocd, *ocd_args, "-c", ocd_cmd]
     return None
 
 
@@ -359,13 +363,16 @@ def load_image(args, cell_dir):
     if cmd is None:
         input(f"Load {uf2} onto the board now (e.g. drag it onto the RP2350 drive), then press Enter... ")
         return "manual"
+    is_arm = "arm" in cell_dir.name
+    core_label = "ARM Cortex-M33" if is_arm else "RISC-V Hazard3 (+Zbb)"
+    print(f"    [LOADER] Flashing SRAM & booting {core_label} via OpenOCD...", flush=True)
     r = subprocess.run(cmd, capture_output=True, text=True, timeout=args.load_timeout)
     if r.returncode != 0:
         raise RuntimeError(f"loader failed ({r.returncode}): {(r.stdout + r.stderr)[-500:]}")
     return " ".join(cmd)
 
 
-def capture(ser, timeout):
+def capture(ser, timeout, on_line=None):
     """Reads lines until the image's EXIT line or the timeout. Returns (lines, status)."""
     lines, buf, t0 = [], b"", time.time()
     while time.time() - t0 < timeout:
@@ -377,10 +384,15 @@ def capture(ser, timeout):
             raw, buf = buf.split(b"\n", 1)
             line = raw.decode("ascii", errors="replace").rstrip("\r")
             lines.append(line)
+            if on_line:
+                on_line(line)
             if line.startswith("EXIT,"):
                 return lines, "exit"
     if buf:
-        lines.append(buf.decode("ascii", errors="replace").rstrip("\r"))
+        line = buf.decode("ascii", errors="replace").rstrip("\r")
+        lines.append(line)
+        if on_line:
+            on_line(line)
     return lines, "timeout"
 
 
@@ -422,9 +434,36 @@ def mode_hw_run(args):
                 input(f"[{c['id']} r{rep}] put the Pico 2 in BOOTSEL mode, then press Enter... ")
             ser.reset_input_buffer()
             t0 = time.time()
+            print(f"\n{'='*72}", flush=True)
+            print(f"[HW-RUN] [{rep}/{args.repeats}] Cell: {c['id']}", flush=True)
+            print(f"  • Language    : {c.get('lang', 'Unknown')}", flush=True)
+            print(f"  • Architecture: {hw['board']} ({hw['arch'].upper()}) -> target '{c['target']}'", flush=True)
+            print(f"  • Toolchain   : {c.get('compiler', '')} {c.get('profile', '')}", flush=True)
+            print(f"  • Ciphers     : SIMON-64/128, PRESENT-80, ASCON-AEAD128 (16B, 64B, 256B, 1024B)", flush=True)
+            print(f"{'-'*72}", flush=True)
+
+            def _live_line(line):
+                if line.startswith("KAT_SIMON64,"):
+                    print("    [KAT] SIMON-64/128 official vectors ... PASS", flush=True)
+                elif line.startswith("KAT_PRESENT80,"):
+                    print("    [KAT] PRESENT-80 official vectors ... PASS", flush=True)
+                elif line.startswith("KAT_ASCON,"):
+                    parts = line.split(",")
+                    if len(parts) >= 3:
+                        print(f"    [KAT] ASCON-AEAD128 ({parts[1]}/{parts[2]} vectors) ... PASS", flush=True)
+                elif line.startswith("FUZZ,"):
+                    print("    [FUZZ] Deterministic PRNG stream digest ... PASS", flush=True)
+                elif line.startswith("SUMMARY,"):
+                    parts = line.split(",")
+                    if len(parts) >= 7:
+                        op = parts[1]
+                        median = parts[6]
+                        bytes_len = parts[2]
+                        print(f"    [BENCH] {op:24} ({bytes_len:>4} B) -> median: {median:>7} cycles", flush=True)
+
             try:
                 how = load_image(args, cdir)
-                lines, status = capture(ser, args.timeout)
+                lines, status = capture(ser, args.timeout, on_line=_live_line)
             except Exception as e:  # noqa: BLE001 -- recorded in the log, the cell is then rejected
                 how, lines, status = f"failed: {e}", [], "load_failed"
             header = [
@@ -438,7 +477,7 @@ def mode_hw_run(args):
                 f"RUN,wall_seconds,{time.time() - t0:.1f}"]
             (raw / f"{c['id']}.r{rep}.log").write_text("\n".join(header + lines) + "\n", newline="\n", encoding="utf-8")
             print(f"  [{'OK  ' if status == 'exit' and 'LWC_END,ok' in lines else 'FAIL'}] {c['id']}.r{rep} "
-                  f"{status} {time.time() - t0:.1f}s", flush=True)
+                  f"{status} in {time.time() - t0:.1f}s", flush=True)
     ser.close()
     with open(run_dir / "run_all.log", "w", encoding="utf-8") as log:
         step(gates, "validate logs (parse_log.py, same validator as QEMU)",

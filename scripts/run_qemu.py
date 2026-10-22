@@ -117,9 +117,15 @@ def main():
     with ThreadPoolExecutor(max_workers=args.jobs) as pool:
         futures = [pool.submit(run_one, c, qemu[c["target"]], versions[c["target"]], out_dir, r, args.timeout)
                    for c, r in jobs]
+        cell_map = {c["id"]: c for c in cells}
         for f in futures:
             cid, rep, ok, status, elapsed = f.result()
-            print(f"  [{'OK  ' if ok else 'FAIL'}] {cid}.r{rep}  exit={status}  {elapsed:.1f}s")
+            c_info = cell_map.get(cid, {})
+            lang = c_info.get("lang", "")
+            target = c_info.get("target", "")
+            comp = c_info.get("compiler", "")
+            prof = c_info.get("profile", "")
+            print(f"  [{'OK  ' if ok else 'FAIL'}] {cid}.r{rep} [{lang} | {target} | {comp} {prof} | SIMON, PRESENT, ASCON] exit={status} in {elapsed:.1f}s")
             if not ok:
                 failures.append(f"{cid}.r{rep}")
     print(f"\nlogs: {out_dir}")

@@ -9,17 +9,17 @@ const RC: [u64; 12] = [
     0xf0, 0xe1, 0xd2, 0xc3, 0xb4, 0xa5, 0x96, 0x87, 0x78, 0x69, 0x5a, 0x4b,
 ];
 
-#[inline(always)]
+#[inline]
 unsafe fn load64_le(ptr: *const u8) -> u64 {
     u64::from_le(core::ptr::read_unaligned(ptr as *const u64))
 }
 
-#[inline(always)]
+#[inline]
 unsafe fn store64_le(ptr: *mut u8, v: u64) {
     core::ptr::write_unaligned(ptr as *mut u64, v.to_le());
 }
 
-#[inline(always)]
+#[inline]
 unsafe fn load_bytes_le(ptr: *const u8, len: usize) -> u64 {
     let mut v = 0u64;
     for i in 0..len {
@@ -28,24 +28,24 @@ unsafe fn load_bytes_le(ptr: *const u8, len: usize) -> u64 {
     v
 }
 
-#[inline(always)]
+#[inline]
 unsafe fn store_bytes_le(ptr: *mut u8, v: u64, len: usize) {
     for i in 0..len {
         *ptr.add(i) = (v >> (8 * i)) as u8;
     }
 }
 
-#[inline(always)]
+#[inline]
 fn pad(n: usize) -> u64 {
     0x01u64 << (8 * n)
 }
 
-#[inline(always)]
+#[inline]
 fn clear_bytes(x: u64, n: usize) -> u64 {
     x & (!0u64 << (8 * n))
 }
 
-#[inline(always)]
+#[inline]
 fn ascon_permutation(s: &mut [u64; 5], rounds: usize) {
     let [mut x0, mut x1, mut x2, mut x3, mut x4] = *s;
 
@@ -71,7 +71,7 @@ fn ascon_permutation(s: &mut [u64; 5], rounds: usize) {
     *s = [x0, x1, x2, x3, x4];
 }
 
-#[inline(always)]
+#[inline]
 unsafe fn ascon_init(s: &mut [u64; 5], k0: u64, k1: u64, nonce: *const u8) {
     *s = [ASCON_AEAD128_IV, k0, k1, load64_le(nonce), load64_le(nonce.add(8))];
     ascon_permutation(s, 12);
@@ -79,7 +79,7 @@ unsafe fn ascon_init(s: &mut [u64; 5], k0: u64, k1: u64, nonce: *const u8) {
     s[4] ^= k1;
 }
 
-#[inline(always)]
+#[inline]
 unsafe fn ascon_absorb_ad(s: &mut [u64; 5], mut ad: *const u8, mut ad_len: usize) {
     if ad_len > 0 {
         while ad_len >= 16 {
@@ -100,7 +100,7 @@ unsafe fn ascon_absorb_ad(s: &mut [u64; 5], mut ad: *const u8, mut ad_len: usize
     s[4] ^= ASCON_DSEP;
 }
 
-#[inline(always)]
+#[inline]
 fn ascon_finalize(s: &mut [u64; 5], k0: u64, k1: u64) {
     s[2] ^= k0;
     s[3] ^= k1;

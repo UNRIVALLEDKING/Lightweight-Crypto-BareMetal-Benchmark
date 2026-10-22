@@ -1,19 +1,16 @@
 <#
 .SYNOPSIS
     Automated Physical Hardware Runner for Raspberry Pi Pico 2 (RP2350)
-    Benchmarks C, C++, Rust, and Zig across ARM Cortex-M33 & RISC-V Hazard3.
+    Benchmarks C, C++, Rust, and Zig across ARM Cortex-M33 silicon.
 
 .EXAMPLE
     .\run_hw_benchmark.ps1 -Port COM3
-    .\run_hw_benchmark.ps1 -Port COM3 -Arch arm
-    .\run_hw_benchmark.ps1 -Port COM3 -Arch rv
+    .\run_hw_benchmark.ps1 -Port COM3 -Rebuild
 #>
 [CmdletBinding()]
 param(
     [string]$Port = "COM3",
     [int]$Baud = 115200,
-    [ValidateSet("all", "arm", "rv")]
-    [string]$Arch = "arm",
     [int]$Repeats = 1,
     [switch]$Rebuild
 )
@@ -26,7 +23,7 @@ Write-Host "==========================================================" -Foregro
 Write-Host "  LWC Multi-Language Hardware Benchmark (RP2350 Pico 2)   " -ForegroundColor Cyan
 Write-Host "==========================================================" -ForegroundColor Cyan
 Write-Host "Serial Port : $Port @ $Baud 8N1"
-Write-Host "Target Arch : $Arch"
+Write-Host "Target Arch : ARM Cortex-M33 (Physical Silicon)"
 Write-Host "Repeats     : $Repeats per cell"
 Write-Host ""
 
@@ -59,43 +56,27 @@ if ($LASTEXITCODE -ne 0) {
 }
 Write-Host " [CONNECTED]" -ForegroundColor Green
 
-# 3. Select Cells based on Arch
-$armCells = @(
+# 3. Select Target Cells: Full 17-cell ARM Cortex-M33 matrix
+$targetCells = @(
     "rp2350_arm-c-gcc-O3",
     "rp2350_arm-c-gcc-Oz",
     "rp2350_arm-c-clang-O3",
     "rp2350_arm-c-clang-Oz",
+    "rp2350_arm-cpp-gcc-O3",
+    "rp2350_arm-cpp-gcc-Oz",
+    "rp2350_arm-cpp-clang-O3",
+    "rp2350_arm-cpp-clang-Oz",
     "rp2350_arm-rust-rustc-O3",
+    "rp2350_arm-rust-rustc-O3-ovf",
     "rp2350_arm-rust-rustc-Oz",
+    "rp2350_arm-rust-rustc-Oz-ovf",
     "rp2350_arm-rust_opt-rustc-O3",
     "rp2350_arm-rust_opt-rustc-Oz",
     "rp2350_arm-zig-zig-ReleaseFast",
     "rp2350_arm-zig-zig-ReleaseSafe",
     "rp2350_arm-zig-zig-ReleaseSmall"
 )
-
-$rvCells = @(
-    "rp2350_rv_zbb-c-gcc-O3",
-    "rp2350_rv_zbb-c-gcc-Oz",
-    "rp2350_rv_zbb-c-clang-O3",
-    "rp2350_rv_zbb-c-clang-Oz",
-    "rp2350_rv_zbb-rust-rustc-O3",
-    "rp2350_rv_zbb-rust-rustc-Oz",
-    "rp2350_rv_zbb-rust_opt-rustc-O3",
-    "rp2350_rv_zbb-rust_opt-rustc-Oz",
-    "rp2350_rv_zbb-zig-zig-ReleaseFast",
-    "rp2350_rv_zbb-zig-zig-ReleaseSafe",
-    "rp2350_rv_zbb-zig-zig-ReleaseSmall"
-)
-
-$targetCells = @()
-if ($Arch -eq "arm") {
-    $targetCells = $armCells
-} elseif ($Arch -eq "rv") {
-    $targetCells = $rvCells
-} else {
-    $targetCells = $armCells + $rvCells
-}
+Write-Host "[ARCH SELECT] Target: ARM Cortex-M33 silicon ($($targetCells.Count) cells)" -ForegroundColor Yellow
 
 # 4. Ensure host reference fuzz digest exists (required by validation gates)
 if (-not (Test-Path "$RepoRoot/build/host/fuzz_digest.json")) {
@@ -116,8 +97,7 @@ foreach ($cell in $targetCells) {
 }
 if ($Rebuild -or $missing.Count -gt 0) {
     $msg = if ($Rebuild) { "Rebuilding all $($targetCells.Count) target cells..." } else { "Missing $($missing.Count) firmware images. Building target cells..." }
-    Write-Host "[BUILD] $msg" -ForegroundColor Yellow
-    $archList = if ($Arch -eq "arm") { @("rp2350_arm") } elseif ($Arch -eq "rv") { @("rp2350_rv_zbb") } else { @("rp2350_arm", "rp2350_rv_zbb") }
+    $archList = @("rp2350_arm")
     $buildCmd = @("run", "scripts/build_all.py", "--target", "embedded", "--arch") + $archList + @("--matrix-out", "build/matrix_hw.json")
     & uv $buildCmd
     if ($LASTEXITCODE -ne 0) {

@@ -15,7 +15,7 @@ const Z3: [u8; 62] = [
     0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0, 0, 1, 1, 1, 0, 0, 1, 1, 0, 1, 0, 0, 0, 0, 1, 1, 1, 1,
 ];
 
-#[inline(always)]
+#[inline]
 fn simon_f(x: u32) -> u32 {
     (x.rotate_left(1) & x.rotate_left(8)) ^ x.rotate_left(2)
 }
