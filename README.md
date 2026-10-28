@@ -8,7 +8,7 @@ Measurements are conducted across two complementary environments:
 1. **Physical Microcontroller Silicon (`env=hardware`):** Real CPU cycles via `DWT_CYCCNT` on **Raspberry Pi Pico 2 (RP2350, ARM Cortex-M33 @ 12 MHz)** loaded into SRAM over SWD via OpenOCD.
 2. **Deterministic Virtual Emulation (`env=qemu`):** Instruction counts under QEMU `-icount` across Cortex-M33 and RISC-V RV32IMAC (with and without the Zbb rotate extension).
 
-For the complete theoretical foundation, experimental setup, and verification criteria, see [**Methodology.md**](Methodology.md).
+For complete methodological controls and theoretical design, see [**Methodology.md**](Methodology.md). For detailed empirical analysis, CPI breakdowns, and disassembly investigation, see [**RESULTS_ANALYSIS.md**](RESULTS_ANALYSIS.md).
 
 ---
 
@@ -97,37 +97,64 @@ uv run python host/differential.py
 
 ## Physical Hardware Findings (RP2350 Cortex-M33 @ 12 MHz)
 
-Measured directly on physical ARM Cortex-M33 silicon using `DWT_CYCCNT` (Run `20261021T214313Z`, all 17 cells passed all 4 verification gates, 238 rows accepted):
+Measured directly on physical ARM Cortex-M33 silicon using `DWT_CYCCNT` (Run `20261026T124721Z`, replicating baseline `20261021T214313Z`, all 17 cells passed all 4 verification gates, 238 rows accepted):
 
 | Configuration | Profile / Safety | SIMON-64 Enc (cycles) | PRESENT-80 Enc (cycles) | ASCON 1KB Enc (cycles) | ASCON 1KB Dec (cycles) | Net Stack (Bytes) | Backend Flash (Bytes) | Total Linked Flash (Bytes)* |
 | :--- | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-| **`C (GCC -O3)`** | Speed / none | 510 | 64,845 | **65,727** | **65,598** | **124 B** | 8,814 | 8,814 |
-| **`C (Clang -O3)`** | Speed / none | **427** | 59,445 | 70,168 | 69,886 | 232 B | 10,756 | 10,756 |
-| **`C++ (GCC -O3)`** | Speed / none | 510 | 64,844 | **65,727** | **65,598** | **124 B** | 8,814 | 8,814 |
+| **`C (GCC -O3)`** | Speed / none | 510 | 64,844 | **65,727** | **65,598** | **124 B** | 8,814 | 8,814 |
+| **`C (Clang -O3)`** | Speed / none | **427** | 59,446 | 70,168 | 69,886 | 232 B | 10,756 | 10,756 |
+| **`C++ (GCC -O3)`** | Speed / none | 510 | 64,843 | **65,727** | 65,599 | **124 B** | 8,814 | 8,814 |
 | **`C++ (Clang -O3)`** | Speed / none | **427** | 59,447 | 70,168 | 69,886 | 232 B | 10,756 | 10,756 |
-| **`Rust (Safe -O3)`** | Speed / bounds | 433 | 67,707 | 69,655 | 71,848 | 236 B | 11,506 | 11,506 |
-| **`Rust (Safe -O3-ovf)`** | Speed / bounds+ovf | 433 | **59,246** | 74,024 | 73,641 | 224 B | 9,164 | 9,164 |
-| **`Rust (Opt -O3)`** | Speed / unchecked | 433 | 67,707 | 73,205 | 73,444 | 240 B | 11,426 | 11,426 |
+| **`Rust (Safe -O3)`** | Speed / bounds | 433 | 67,711 | 69,655 | 71,848 | 236 B | 11,506 | 11,506 |
+| **`Rust (Safe -O3-ovf)`** | Speed / bounds+ovf | 433 | **59,247** | 74,024 | 73,641 | 224 B | 9,164 | 9,164 |
+| **`Rust (Opt -O3)`** | Speed / unchecked | 433 | 67,711 | 73,205 | 73,444 | 240 B | 11,426 | 11,426 |
 | **`Zig (ReleaseFast)`** | Speed / none | 433 | 59,406 | 73,212 | 71,557 | 300 B | 10,534 | 10,534 |
 | **`Zig (ReleaseSafe)`** | Speed / all | 433 | 59,402 | 75,789 | 70,745 | 296 B | 9,820 | 9,820 |
 | | | | | | | | | |
-| **`C (GCC -Oz)`** | Size / none | 577 | 74,649 | 87,689 | 88,074 | 252 B | 3,600 | 3,600 |
-| **`C (Clang -Oz)`** | Size / none | 605 | 110,006 | 87,988 | 87,850 | 256 B | 2,930 | 2,930 |
+| **`C (GCC -Oz)`** | Size / none | 577 | 74,648 | 87,689 | 88,074 | 252 B | 3,600 | 3,600 |
+| **`C (Clang -Oz)`** | Size / none | 605 | 110,008 | 87,988 | 87,850 | 256 B | 2,930 | 2,930 |
 | **`C++ (GCC -Oz)`** | Size / none | 584 | 76,108 | 87,752 | 88,330 | 252 B | 3,616 | 3,616 |
-| **`C++ (Clang -Oz)`** | Size / none | **604** | 116,727 | 87,724 | 87,906 | 256 B | 2,854 | 2,854 |
+| **`C++ (Clang -Oz)`** | Size / none | **604** | 116,729 | 87,724 | 87,906 | 256 B | 2,854 | 2,854 |
 | **`Rust (Safe -Oz)`** | Size / bounds | 751 | 115,761 | 109,349 | 109,290 | 268 B | 4,540 | 7,218* |
-| **`Rust (Safe -Oz-ovf)`** | Size / bounds+ovf | 751 | 114,682 | 109,551 | 109,493 | 272 B | 4,628 | 7,417* |
-| **`Rust (Opt -Oz)`** | Size / unchecked | 611 | 115,633 | **86,202** | **86,219** | 268 B | 2,906 | 2,906 |
-| **`Zig (ReleaseSmall)`** | Size / none | 605 | 119,540 | **84,538** | **84,493** | 256 B | **2,780** | **2,780** |
+| **`Rust (Safe -Oz-ovf)`** | Size / bounds+ovf | 751 | 114,676 | 109,551 | 109,493 | 272 B | 4,628 | 7,417* |
+| **`Rust (Opt -Oz)`** | Size / unchecked | 611 | 115,629 | **86,202** | **86,219** | 268 B | 2,906 | 2,906 |
+| **`Zig (ReleaseSmall)`** | Size / none | 605 | 119,536 | **84,538** | **84,493** | 256 B | **2,780** | **2,780** |
 
 *\*Total Linked Flash includes `backend_runtime_flash` (e.g. 2,678 B of `compiler_builtins` / `core` runtime linked by Safe Rust `-Oz`).*
+
+---
+
+## Architectural Virtual Emulation Findings (QEMU: ARM vs. RISC-V Zbb)
+
+Deterministic retired instruction counts under QEMU `-icount` across ARM Cortex-M33, RISC-V RV32 baseline (`rv32imac`), and RISC-V RV32 with bitmanip rotate extension (`rv32imac_zbb`) (Run `20261024T095039Z`, 51 cells accepted, 714 rows verified):
+
+| Configuration | ARMv8-M (M33)<br>SIMON Enc | RV32 Baseline<br>SIMON Enc | RV32 + Zbb<br>SIMON Enc (Impact) | ARMv8-M (M33)<br>Ascon 1KB Enc | RV32 Baseline<br>Ascon 1KB Enc | RV32 + Zbb<br>Ascon 1KB Enc (Impact) |
+| :--- | :---: | :---: | :---: | :---: | :---: | :---: |
+| **`C (Clang -O3)`** | 309 | 840 | **577 (-31.3%)** | 66,971 | 77,663 | **72,143 (-7.1%)** |
+| **`C (GCC -O3)`** | 459 | 839 | **576 (-31.3%)** | 61,079 | 77,304 | **71,562 (-7.4%)** |
+| **`Rust (Safe -O3)`** | 312 | 840 | **577 (-31.3%)** | 66,079 | 77,891 | **72,371 (-7.1%)** |
+| **`Zig (ReleaseFast)`** | 323 | 846 | **583 (-31.1%)** | 69,425 | 79,815 | **72,666 (-9.0%)** |
+| **`Zig (ReleaseSafe)`** | 323 | 846 | **583 (-31.1%)** | 74,164 | 81,167 | **73,236 (-9.8%)** |
+| **`C (Clang -Oz)`** | 551 | 954 | **688 (-27.9%)** | 76,854 | 83,535 | **78,015 (-6.6%)** |
+| **`Rust (Opt -Oz)`** | 552 | 930 | **666 (-28.4%)** | 74,548 | 82,560 | **77,040 (-6.7%)** |
+| **`Zig (ReleaseSmall)`** | 551 | 930 | **666 (-28.4%)** | 73,858 | 83,092 | **76,884 (-7.5%)** |
+
+*Note: On PRESENT-80, the Zbb rotate extension produced 0.0% instruction difference across all backends because PRESENT relies on arbitrary bit-permutations and nibble S-boxes rather than word rotations.*
+
+---
 
 ### Key Takeaways:
 1. **Inlining Policy & Code Size at -Oz:** Converting `#[inline(always)]` to advisory `#[inline]` in `ciphers/rust_opt` enabled LLVM to optimize for code size under `-Oz`. Backend flash dropped from **6,752 B down to 2,906 B (-57%)**, achieving footprint and throughput comparable to C Clang `-Oz` (2,930 B and 87,988 cycles) and beating C GCC `-Oz` (3,600 B and 87,689 cycles). Meanwhile, Zig `ReleaseSmall` produced the single most compact binary (**2,780 B**) and fastest size-optimized throughput on Ascon (**84,538 cycles**).
 2. **Stack Attribution & Safety Invariants:** `Rust (opt)` `-O3` stack depth measured **240 B**, closely matching Safe Rust (**236 B**) and Clang C (**232 B**). This empirical result does not support the hypothesis that Rust's stack usage is inherently inflated by language safety invariants or slice bounds checks. Stack consumption is governed by LLVM helper inlining (`ascon_absorb_ad`) and call-frame construction, where GCC allocates 124 B and LLVM allocates ~232-240 B.
 3. **C++ Abstraction Overheads:** At `-O3`, freestanding C++17 matches C cycle-for-cycle and byte-for-byte across GCC and Clang. At `-Oz`, minor compiler code-generation divergences emerge on the bit-permutation layer of PRESENT-80 (+6.1% cycles in Clang, +2.0% in GCC), while SIMON and Ascon remain within 0.1% of C.
-4. **Rust Overflow Checks & The PRESENT-80 Compiler Effect:** Enabling arithmetic overflow checks (`-ovf`) added 0% overhead on SIMON-64 (433 vs 433 cycles) and a modest 6.2% overhead on Ascon-1024B (74,024 vs 69,655 cycles). Counter-intuitively, on PRESENT-80, the overflow-checked binary executed **12.5% faster** on silicon (59,246 vs 67,707 cycles) and compiled **20.4% smaller** (9,164 B vs 11,506 B), matching a 19.1% instruction reduction in QEMU. Observed disassembly reveals that LLVM emitted a 351-instruction sequence using 16-bit multiplies (`uxth; mul`) for checked builds vs. a 423-instruction sequence with 32-bit `umull` operations and register spills for unchecked builds; while we hypothesize that overflow tracking altered the cost model for lowering `(i * 16) % 63`, the exact compiler heuristic linking the overflow intrinsic to this choice remains unproven, and it is reported strictly as an observed compiler artifact.
+4. **Rust Overflow Checks & The PRESENT-80 Compiler Effect:** Enabling arithmetic overflow checks (`-ovf`) added 0% overhead on SIMON-64 (433 vs 433 cycles) and a modest 6.2% overhead on Ascon-1024B (74,024 vs 69,655 cycles). Counter-intuitively, on PRESENT-80, the overflow-checked binary executed **12.5% faster** on silicon (59,247 vs 67,711 cycles) and compiled **20.4% smaller** (9,164 B vs 11,506 B), matching a 19.1% instruction reduction in QEMU. Observed disassembly reveals that LLVM emitted a 351-instruction sequence using 16-bit multiplies (`uxth; mul`) for checked builds vs. a 423-instruction sequence with 32-bit `umull` operations and register spills for unchecked builds; while we hypothesize that overflow tracking altered the cost model for lowering `(i * 16) % 63`, the exact compiler heuristic linking the overflow intrinsic to this choice remains unproven, and it is reported strictly as an observed compiler artifact.
 5. **Zig Safety Efficiency & Compactness:** Zig `ReleaseSafe` incurred zero penalty on SIMON (433 vs 433 cycles) and PRESENT (59,402 vs 59,406 cycles), and a measured 3.5% cycle overhead (6.8% in QEMU instructions) on Ascon-1024B encryption. Zig `ReleaseSmall` produced the single most compact binary across the entire suite (**2,780 B**).
+6. **Hardware vs. Simulation Divergence:** Due to instruction-level parallelism, paired memory loads (`ldm`/`ldrd`), and loop unrolling, instruction counts fail to predict cycle counts linearly (CPI ranges from 0.99 to 1.40). For comprehensive analysis, see [**RESULTS_ANALYSIS.md**](RESULTS_ANALYSIS.md).
+
+---
+
+## Complete Results Analysis
+For an exhaustive breakdown of the research questions, CPI analysis, stack watermarking, assembly disassembly, and practical recommendations, see [**RESULTS_ANALYSIS.md**](RESULTS_ANALYSIS.md).
 
 ---
 
